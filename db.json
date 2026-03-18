@@ -1,0 +1,144 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "category": "hamburgers",
+      "name": "Mega",
+      "description": "O artesanal tamanho família recheado com duas carnes suculentas, queijo e bacon.",
+      "price": 25.50,
+      "image": "/foods/burger.jpg"
+    },
+    {
+      "id": 2,
+      "category": "hamburgers",
+      "name": "Extra Bacon",
+      "description": "Criado para os amantes de bacon, possui em todas as suas camadas bacon bem assado.",
+      "price": 23.50,
+      "image": "/foods/bastante-bacon.jpg"
+    },
+    {
+      "id": 3,
+      "category": "hamburgers",
+      "name": "Tradicional",
+      "description": "O simples também é delicioso, principalmente se envolver nossa carne artesanal.",
+      "price": 12.00,
+      "image": "/foods/tradicional.webp"
+    },
+    {
+      "id": 4,
+      "category": "hamburgers",
+      "name": "Big Carne",
+      "description": "Uma carne artesanal de primeira qualidade com 4cm de altura e uma salada completa.",
+      "price": 18.00,
+      "image": "/foods/gig-carne.jpg"
+    },
+    {
+      "id": 5,
+      "category": "pizzas",
+      "name": "Calabresa",
+      "description": "Molho de tomate artesanal, mussarela e calabresa selecionada.",
+      "price": 45.00,
+      "image": "/foods/pizza-calabreza.jpg"
+    },
+    
+
+    { "id": 6, 
+    "category": "pizzas",
+    "name": "Portuguesa", 
+    "description": "Pizza recheada com presunto, mussarela, ovo, cebola, ervilha e azeitona.", 
+    "price": 28.50, "image": "/foods/pizza-portuguesa.jpg" },
+    
+    { "id": 7, "category": "pizzas",
+    "name": "Frango com Catupiry", 
+    "description": "Pizza recheada com frango desfiado, catupiry e milho.", 
+    "price": 24.00, "image": "/foods/pizza-frango.jpg" },
+
+    { "id": 8, 
+    "category": "pizzas",
+    "name": "Mussarela", 
+    "description": "Nossa famosa mussarela com molho de tomate artesanal e orégano.", 
+    "price": 20.50, 
+    "image": "/foods/pizza-mussarela.jpg" },
+
+    { "id": 9, "category": "pizzas",
+    "name": "Margerita", 
+    "description": "Pizza recheada com manjericão, cebola, mussarela, orégano e azeitona.", 
+    "price": 25.00, "image": "/foods/margarita.jpg" },
+
+    { "id": 10, "category": "pizzas",
+    "name": "Brigadeiro com kitkat", 
+    "description": "Pizza recheada com brigadeiro, chocolate e kitkat.", 
+    "price": 26.00, "image": "/foods/pizza-brigadeiro.jpg" },
+
+    { "id": 11, "category": "pizzas",
+    "name": "Banana Doce de Leite", 
+    "description": "Pizza recheada com banana e doce de leite.", 
+    "price": 24.00, "image": "/foods/banana-doce-de-leite.jpg" },
+
+    { "id": 12, "category": "pizzas",
+    "name": "Brigadeiro com morango", 
+    "description": "Pizza recheada com brigadeiro, morango e granulado.", 
+    "price": 27.00, "image": "/foods/chocolate-morango.jpg" },
+
+    { "id": 13, 
+    "name": "Soda", 
+    "category": "drinks",
+    "description": "Refrigerante de soda com sabor cítrico.", 
+    "price": 5.00, "image": "/foods/soda.jpg" },
+
+    { "id": 14, 
+    "name": "Coca-Cola", 
+    "category": "drinks",
+    "description": "Refrigerante clássico de coca-cola.", 
+    "price": 5.50, 
+    "image": "/foods/coca-colaa.jpg" },
+
+    { "id": 15, 
+    "category": "drinks",
+    "name": "Fanta", "description": 
+    "Refrigerante de laranja com sabor natural.", 
+    "price": 5.00, "image": "/foods/fanta.jpg" },
+
+    { "id": 16, "name": 
+      "Suco de Maracujá", "category": "drinks",
+       "description":"Refrigerante de suco de maracujá com sabor natural.", 
+      "price": 5.00, "image": "/foods/suco-maracuja.avif" },
+    
+    { "id": 17, 
+    "name": "Suco de Uva",
+    "category": "drinks", 
+    "description": "Refrigerante de suco de uva com sabor natural.", 
+    "price": 5.50, "image": "/foods/suco-uva.jpg" },
+    
+    { "id": 18, 
+    "name": "Suco de Laranja", 
+    "category": "drinks",
+    "description": "Refrigerante de suco de laranja com sabor natural.", 
+    "price": 5.00, "image": "/foods/suco-laranja.jpg" },
+
+    { "id": 19, "name": "Picole", 
+    "category": "sorvetes", 
+    "description": "Picole de morango com cobertura de chocolate.", 
+    "price": 5.00, "image": "/foods/picoles.jpg" },
+
+    { "id": 20, 
+    "name": "Bolas Sorvetes", 
+    "category": "sorvetes", 
+    "description": "Bolas de sorvete com cobertura de granulado.", 
+    "price": 8.00, "image": "/foods/bolas-sorvetes.jpg" },
+
+    { "id": 21, 
+    "name": "Sorvete Casquinha", 
+    "category": "sorvetes", 
+    "description": "Sorvete em casquinha com calda de chocolate.", 
+    "price": 7.50, "image": "/foods/sorvete-casquinha.jpg" },
+
+    { "id": 22, 
+    "name": "Açaí", 
+    "category": "sorvetes", 
+    "description": "Açaí com granola e banana.", 
+    "price": 12.00, "image": "/foods/acai.jpg" }
+  ]
+  
+    
+}
