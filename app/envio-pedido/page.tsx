@@ -1,4 +1,5 @@
 "use client"
+
 import { useCart } from './../contexts/CartContext' 
 import * as S from './style'
 import Link from 'next/link'
@@ -15,30 +16,45 @@ const masks = {
   cvv: (v: string) => v.replace(/\D/g, '').slice(0, 3),
 }
 
-// --- SCHEMA DE VALIDAÇÃO YUP ---
+// --- SCHEMA DE VALIDAÇÃO YUP (Sincronizado com o Prisma) ---
 const checkoutSchema = yup.object().shape({
-  nome: yup.string().required('Nome completo é obrigatório').min(5, 'Digite seu nome completo'),
+  fullName: yup.string().required('Nome completo é obrigatório').min(5, 'Digite seu nome completo'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
-  whatsapp: yup.string().required('WhatsApp é obrigatório').min(14, 'Telefone inválido'),
-  cpf: yup.string().required('CPF é obrigatório').min(14, 'CPF inválido'),
-  cep: yup.string().required('CEP é obrigatório').min(9, 'CEP inválido'),
-  endereco: yup.string().required('Endereço é obrigatório'),
-  numero: yup.string().required('Nº é obrigatório'),
-  bairro: yup.string().required('Bairro é obrigatório'),
-  cidade: yup.string().required('Cidade é obrigatória'),
-  estado: yup.string().required('Selecione o estado'),
-  cartaoNumero: yup.string().required('Número do cartão é obrigatório').min(19, 'Cartão incompleto'),
-  cartaoValidade: yup.string().required('Obrigatório').min(5, 'Data inválida'),
-  cartaoCVV: yup.string().required('Obrigatório').min(3, 'CVV inválido'),
+  mobile: yup.string().required('WhatsApp é obrigatório').min(14, 'Telefone inválido'),
+  document: yup.string().required('CPF é obrigatório').min(14, 'CPF inválido'),
+  zipCode: yup.string().required('CEP é obrigatório').min(9, 'CEP inválido'),
+  street: yup.string().required('Endereço é obrigatório'),
+  number: yup.string().required('Nº é obrigatório'),
+  complement: yup.string().nullable(), // Opcional no Prisma (String?)
+  neighborhood: yup.string().required('Bairro é obrigatório'),
+  city: yup.string().required('Cidade é obrigatória'),
+  state: yup.string().required('Obrigatório').length(2, 'UF deve ter 2 caracteres'),
+  // Campos de cartão (não costumam ir para o banco Customer, mas mantidos para o form)
+  cartaoNumero: yup.string().required('Obrigatório').min(19, 'Incompleto'),
+  cartaoValidade: yup.string().required('Obrigatório').min(5, 'Inválido'),
+  cartaoCVV: yup.string().required('Obrigatório').min(3, 'Inválido'),
 })
 
 export default function CheckoutPage() {
   const { cart } = useCart()
   const [errors, setErrors] = useState<Record<string, string>>({})
+  
+  // Estado inicial com as chaves exatas da imagem (fullName, mobile, document, etc)
   const [formData, setFormData] = useState({
-    nome: '', email: '', whatsapp: '', cpf: '', cep: '',
-    endereco: '', numero: '', complemento: '', bairro: '',
-    cidade: '', estado: '', cartaoNumero: '', cartaoValidade: '', cartaoCVV: '',
+    fullName: '', 
+    email: '', 
+    mobile: '', 
+    document: '', 
+    zipCode: '',
+    street: '', 
+    number: '', 
+    complement: '', 
+    neighborhood: '',
+    city: '', 
+    state: '', 
+    cartaoNumero: '', 
+    cartaoValidade: '', 
+    cartaoCVV: '',
   })
 
   const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -47,17 +63,16 @@ export default function CheckoutPage() {
     const { name, value } = e.target
     let maskedValue = value
 
-    // Aplica a máscara baseada no nome do campo
-    if (name === 'cpf') maskedValue = masks.cpf(value)
-    if (name === 'whatsapp') maskedValue = masks.whatsapp(value)
-    if (name === 'cep') maskedValue = masks.cep(value)
+    // Aplica a máscara baseada no name do input
+    if (name === 'document') maskedValue = masks.cpf(value)
+    if (name === 'mobile') maskedValue = masks.whatsapp(value)
+    if (name === 'zipCode') maskedValue = masks.cep(value)
     if (name === 'cartaoNumero') maskedValue = masks.cartao(value)
     if (name === 'cartaoValidade') maskedValue = masks.validade(value)
     if (name === 'cartaoCVV') maskedValue = masks.cvv(value)
 
     setFormData(prev => ({ ...prev, [name]: maskedValue }))
     
-    // Limpa o erro do campo enquanto o usuário digita
     if (errors[name]) setErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
@@ -67,18 +82,16 @@ export default function CheckoutPage() {
 
   const handleFinalizarPedido = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     try {
       if (cart.length === 0) return alert("Seu carrinho está vazio!")
-      
-      // Valida o formulário
       await checkoutSchema.validate(formData, { abortEarly: false })
       
-      console.log('Dados prontos para o banco:', { ...formData, total, itens: cart })
+      // Aqui os dados já estão com as chaves prontas para o seu model 'Customer'
+      console.log('Dados para o Prisma:', { ...formData, total })
       alert('Pedido enviado com sucesso!')
     } catch (err: any) {
       const validationErrors: Record<string, string> = {}
-      err.inner.forEach((error: any) => {
+      err.inner?.forEach((error: any) => {
         validationErrors[error.path] = error.message
       })
       setErrors(validationErrors)
@@ -98,8 +111,8 @@ export default function CheckoutPage() {
           
           <div className="input-group">
             <label>Nome Completo</label>
-            <input type="text" name="nome" value={formData.nome} onChange={handleInputChange} />
-            {errors.nome && <S.ErrorMessage>{errors.nome}</S.ErrorMessage>}
+            <input type="text" name="fullName" value={formData.fullName} onChange={handleInputChange} />
+            {errors.fullName && <S.ErrorMessage>{errors.fullName}</S.ErrorMessage>}
           </div>
 
           <div className="input-group">
@@ -111,13 +124,13 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', gap: '10px' }}>
             <div className="input-group">
               <label>WhatsApp</label>
-              <input type="tel" name="whatsapp" value={formData.whatsapp} onChange={handleInputChange} placeholder="(99) 99999-9999" />
-              {errors.whatsapp && <S.ErrorMessage>{errors.whatsapp}</S.ErrorMessage>}
+              <input type="tel" name="mobile" value={formData.mobile} onChange={handleInputChange} placeholder="(99) 99999-9999" />
+              {errors.mobile && <S.ErrorMessage>{errors.mobile}</S.ErrorMessage>}
             </div>
             <div className="input-group">
               <label>CPF</label>
-              <input type="text" name="cpf" value={formData.cpf} onChange={handleInputChange} placeholder="000.000.000-00" />
-              {errors.cpf && <S.ErrorMessage>{errors.cpf}</S.ErrorMessage>}
+              <input type="text" name="document" value={formData.document} onChange={handleInputChange} placeholder="000.000.000-00" />
+              {errors.document && <S.ErrorMessage>{errors.document}</S.ErrorMessage>}
             </div>
           </div>
 
@@ -125,44 +138,44 @@ export default function CheckoutPage() {
           <div style={{ display: 'flex', gap: '10px' }}>
             <div className="input-group" style={{ flex: 1 }}>
               <label>CEP</label>
-              <input type="text" name="cep" value={formData.cep} onChange={handleInputChange} placeholder="00000-000" />
-              {errors.cep && <S.ErrorMessage>{errors.cep}</S.ErrorMessage>}
+              <input type="text" name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="00000-000" />
+              {errors.zipCode && <S.ErrorMessage>{errors.zipCode}</S.ErrorMessage>}
             </div>
             <div className="input-group" style={{ flex: 2 }}>
               <label>Rua/Logradouro</label>
-              <input type="text" name="endereco" value={formData.endereco} onChange={handleInputChange} />
-              {errors.endereco && <S.ErrorMessage>{errors.endereco}</S.ErrorMessage>}
+              <input type="text" name="street" value={formData.street} onChange={handleInputChange} />
+              {errors.street && <S.ErrorMessage>{errors.street}</S.ErrorMessage>}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <div className="input-group">
               <label>Número</label>
-              <input type="text" name="numero" value={formData.numero} onChange={handleInputChange} />
-              {errors.numero && <S.ErrorMessage>{errors.numero}</S.ErrorMessage>}
+              <input type="text" name="number" value={formData.number} onChange={handleInputChange} />
+              {errors.number && <S.ErrorMessage>{errors.number}</S.ErrorMessage>}
             </div>
             <div className="input-group">
               <label>Bairro</label>
-              <input type="text" name="bairro" value={formData.bairro} onChange={handleInputChange} />
-              {errors.bairro && <S.ErrorMessage>{errors.bairro}</S.ErrorMessage>}
+              <input type="text" name="neighborhood" value={formData.neighborhood} onChange={handleInputChange} />
+              {errors.neighborhood && <S.ErrorMessage>{errors.neighborhood}</S.ErrorMessage>}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '10px' }}>
             <div className="input-group" style={{ flex: 2 }}>
               <label>Cidade</label>
-              <input type="text" name="cidade" value={formData.cidade} onChange={handleInputChange} />
-              {errors.cidade && <S.ErrorMessage>{errors.cidade}</S.ErrorMessage>}
+              <input type="text" name="city" value={formData.city} onChange={handleInputChange} />
+              {errors.city && <S.ErrorMessage>{errors.city}</S.ErrorMessage>}
             </div>
             <div className="input-group" style={{ flex: 1 }}>
               <label>Estado</label>
-              <select name="estado" value={formData.estado} onChange={handleInputChange}>
+              <select name="state" value={formData.state} onChange={handleInputChange}>
                 <option value="">UF</option>
                 <option value="SP">SP</option>
                 <option value="RJ">RJ</option>
                 <option value="PB">PB</option>
               </select>
-              {errors.estado && <S.ErrorMessage>{errors.estado}</S.ErrorMessage>}
+              {errors.state && <S.ErrorMessage>{errors.state}</S.ErrorMessage>}
             </div>
           </div>
 
