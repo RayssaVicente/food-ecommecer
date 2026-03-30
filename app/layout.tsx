@@ -2,6 +2,7 @@ import { Sidebar } from './components/Sidebar/Sidebar'
 import type { Metadata } from 'next'
 import { SnackProvider } from './contexts/SnackContext' // 1. Importe seu Provider
 import { CartProvider } from './contexts/CartContext'
+import { Toaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: 'Food Ecommerce | O melhor hambúrguer',
@@ -18,12 +19,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SnackProvider> 
           <CartProvider> 
             <div style={{ display: 'flex' }}>
-              <Sidebar />
+              
               <main style={{ flex: 1 }}>
                 {children}
               </main>
             </div>
+            <Toaster 
+              position="bottom-center" 
+              reverseOrder={false} 
+              gutter={8}
+            />
           </CartProvider>
+          
         </SnackProvider>
       </body>
     </html>
