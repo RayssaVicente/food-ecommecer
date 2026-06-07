@@ -4,7 +4,7 @@ import { CustomerData } from '@/app/interfaces/CustomerData';
 import {PaymentData} from '@/app/interfaces/PaymentData'    
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL
+  baseURL: "https://backend-food-ecommerce.onrender.com"
 });
 
 export const processCheckout = (cart: Product[], customer: CustomerData, payment: PaymentData) => api.post('/checkout', {
