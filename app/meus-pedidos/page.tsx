@@ -1,39 +1,33 @@
-"use client"
+"use client";
 import { useCart } from '../contexts/CartContext' 
 import * as S from './style' 
 import { useRouter } from 'next/navigation'
-
 import { FaTrashAlt, FaPlusCircle, FaMinusCircle } from 'react-icons/fa'
 
 export default function MyCart() {
   const { cart, addProduct, removeProduct, deleteProduct } = useCart()
-
   const router = useRouter()
+
   const handleGoToCheckout = () => {
-    router.push('/envio-pedido') // Faz a navegação
+    router.push('/envio-pedido')
   }
 
-  // Cálculo do total geral
   const totalGeral = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
   return (
     <S.CartContainer>
       <header>
-       
         <div className="logo">
             <img src="/icons/logo.png" alt="Logo" />
             <div className="brand-text">
                 <span>Food Commerce</span>
-               
             </div>
         </div>
-       
-      
         
         <div className="cart-header-info">
           <div>
             <h2>Meus pedidos</h2>
-            <p>{cart.length.toString().padStart(2, '0')} lanches</p>
+            <p>{cart.length.toString().padStart(2, '0')} itens</p>
           </div>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
              <circle cx="9" cy="21" r="1"></circle>
@@ -67,9 +61,9 @@ export default function MyCart() {
               </td>
               <td>
                 <div className="quantity-controls">
-                  <button onClick={() => removeProduct(item.id)}><FaMinusCircle /></button>
+                  <button onClick={() => removeProduct(item.id)} aria-label="Remover um"><FaMinusCircle /></button>
                   <span>{item.quantity.toString().padStart(2, '0')}</span>
-                  <button onClick={() => addProduct(item)}><FaPlusCircle /></button>
+                  <button onClick={() => addProduct(item)} aria-label="Adicionar um"><FaPlusCircle /></button>
                 </div>
               </td>
               <td>
@@ -79,7 +73,7 @@ export default function MyCart() {
               </td>
               <td>
                 <button className="delete-btn" onClick={() => deleteProduct(item.id)}>
-                  <FaTrashAlt color="#ffcc00" />
+                  <FaTrashAlt color="#ffcc00" size={20} />
                 </button>
               </td>
             </tr>
@@ -92,10 +86,7 @@ export default function MyCart() {
           <span>TOTAL</span>
           <strong>R$ {totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
         </div>
-        <button 
-          className="finish-btn" 
-          onClick={handleGoToCheckout}
-        >
+        <button className="finish-btn" onClick={handleGoToCheckout}>
           Finalizar Pedido
         </button>
       </footer>

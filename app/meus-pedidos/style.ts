@@ -3,11 +3,19 @@ import styled from 'styled-components';
 export const CartContainer = styled.div`
   background: #121212;
   min-height: 100vh;
-  /* Espaço para não ficar embaixo da sidebar vermelha lateral */
   padding: 40px 40px 40px 140px; 
   color: white;
   display: flex;
   flex-direction: column;
+
+  /* Responsividade do Container */
+  @media (max-width: 1024px) {
+    padding: 30px 30px 30px 100px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px; /* Remove o espaço da sidebar lateral no mobile */
+  }
 
   header {
     display: flex;
@@ -16,35 +24,25 @@ export const CartContainer = styled.div`
     margin-bottom: 40px;
     width: 100%;
 
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 20px;
+      text-align: center;
+    }
+
     .logo {
       display: flex;
       align-items: center;
       gap: 15px;
 
       img { 
-        width: 50px; 
-        /* Filtro dourado aplicado ao ícone */
+        width: 45px; 
         filter: invert(75%) sepia(82%) saturate(452%) hue-rotate(354deg) brightness(101%) contrast(101%);
       }
 
-      .brand-text {
-        display: flex;
-        flex-direction: column;
-        line-height: 1;
-
-        span { 
-          font-size: 1.8rem; 
-          font-weight: bold; 
-          color: white;
-          font-family: 'Inter', sans-serif;
-        }
-
-        .commerce { 
-          color: #e74c3c; /* Vermelho do modelo */
-          font-size: 0.9rem; 
-          font-weight: normal;
-          margin-top: 2px;
-        }
+      .brand-text span { 
+        font-size: 1.5rem; 
+        font-weight: bold; 
       }
     }
 
@@ -55,47 +53,50 @@ export const CartContainer = styled.div`
       
       div {
         text-align: right;
-        h2 { font-size: 2rem; margin: 0; color: white; }
-        p { color: #ffcc00; margin: 0; font-weight: bold; font-size: 1.1rem; }
+        @media (max-width: 768px) { text-align: center; }
+        h2 { font-size: 1.8rem; }
+        p { color: #ffcc00; font-weight: bold; }
       }
       
-      svg { 
-        width: 40px;
-        height: 40px;
-      }
+      svg { width: 35px; height: 35px; }
     }
   }
 
   .cart-footer {
     margin-top: auto; 
-    padding-top: 30px;
+    padding: 30px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-top: 2px solid #333;
 
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 20px;
+    }
+
     .total-container {
       display: flex;
       align-items: baseline;
       gap: 20px;
-      span { color: #888; font-size: 1.2rem; }
-      strong { font-size: 2rem; color: white; }
+      span { color: #888; font-size: 1.1rem; }
+      strong { font-size: 2.2rem; color: white; }
     }
 
     .finish-btn {
       background: #e74c3c;
       color: white;
       border: none;
-      padding: 10px 30px;
+      padding: 15px 40px;
       border-radius: 10px;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: bold;
       text-transform: uppercase;
       cursor: pointer;
-      transition: filter 0.2s;
+      width: auto;
 
-      &:hover {
-        filter: brightness(0.9);
+      @media (max-width: 768px) {
+        width: 100%; /* Botão ocupa largura total no mobile */
       }
     }
   }
@@ -106,10 +107,26 @@ export const Table = styled.table`
   border-collapse: collapse;
   margin-bottom: 40px;
 
+  /* Esconde o cabeçalho da tabela no mobile */
+  @media (max-width: 768px) {
+    thead { display: none; }
+    
+    tbody tr {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #1a1a1a;
+      margin-bottom: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      position: relative;
+    }
+  }
+
   th {
     text-align: left;
     color: #888;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
     letter-spacing: 2px;
     padding-bottom: 20px;
@@ -120,18 +137,27 @@ export const Table = styled.table`
     padding: 25px 0;
     border-bottom: 1px solid #333;
     vertical-align: middle;
+
+    @media (max-width: 768px) {
+      border-bottom: none;
+      padding: 10px 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+    }
   }
 
   .product-img {
-    width: 130px;
-    height: 100px;
+    width: 120px;
+    height: 90px;
     object-fit: cover;
     border-radius: 12px;
   }
 
   .product-info {
-    h3 { margin: 0 0 5px 0; font-size: 1.5rem; color: white; }
-    strong { color: #888; font-size: 1.1rem; font-weight: normal; }
+    h3 { font-size: 1.4rem; color: white; margin-bottom: 5px; }
+    strong { color: #888; font-weight: normal; }
   }
 
   .quantity-controls {
@@ -142,14 +168,9 @@ export const Table = styled.table`
     button {
       background: none;
       border: none;
-      color: #ffcc00; /* Cor amarela dos controles */
+      color: #ffcc00;
       font-size: 1.8rem;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      transition: transform 0.1s;
-
-      &:active { transform: scale(0.9); }
     }
 
     span {
@@ -158,7 +179,6 @@ export const Table = styled.table`
       padding: 5px 15px;
       border-radius: 6px;
       font-weight: bold;
-      font-size: 1.2rem;
       min-width: 45px;
       text-align: center;
     }
@@ -167,17 +187,16 @@ export const Table = styled.table`
   .subtotal {
     font-size: 1.5rem;
     color: white;
-    font-weight: bold;
+    @media (max-width: 768px) {
+      &::before { content: 'Subtotal: '; font-size: 1rem; color: #888; }
+    }
   }
 
   .delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: transform 0.2s;
-    
-    &:hover { transform: scale(1.2); }
+    @media (max-width: 768px) {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
   }
 `;

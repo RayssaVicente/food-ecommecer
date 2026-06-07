@@ -1,17 +1,21 @@
 "use client"
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react' // Adicionei useEffect
 import { Product } from '../interfaces/Product'
+import { CustomerData } from '../interfaces/CustomerData' 
+import { PaymentData } from '../interfaces/PaymentData'
 
-interface CartItem extends Product {
-  quantity: number
-}
+import {CartItem} from '../interfaces/CartItem'
+import { processCheckout } from '@/services/api'
+
+import toast from 'react-hot-toast';
 
 interface CartContextData {
   cart: CartItem[]
   addProduct: (product: Product) => void,
-  totalAmount: number,
+  subtotal: number,
   removeProduct: (productId: number) => void
   deleteProduct: (productId: number) => void
+  payOrder: (customer: CustomerData, payment: any) => Promise<void>
 }
 
 const CartContext = createContext<CartContextData>({} as CartContextData)
@@ -22,8 +26,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // --- LOG PARA O CONSOLE ---
   useEffect(() => {
     console.log('Carrinho atualizado:', cart)
-  }, [cart]) // Sempre que 'cart' mudar, ele executa
-  // --------------------------
+  }, [cart]) 
+  
 
   function addProduct(product: Product) {
     setCart(state => {
@@ -31,11 +35,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (productExists) {
         return state.map(item => 
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id ? { ...item, quantity: item.quantity + 1, subtotal: item.price * (item.quantity + 1) } : item
         )
       }
 
-      return [...state, { ...product, quantity: 1 }]
+      return [...state, { ...product, quantity: 1, subtotal: product.price * 1 }]
     })
     
     // Opcional: remover o alert se o console já estiver te ajudando
@@ -46,7 +50,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   function removeProduct(productId: number) {
     setCart(state => state.map(item => 
       item.id === productId && item.quantity > 1 
-        ? { ...item, quantity: item.quantity - 1 } 
+        ? { ...item, quantity: item.quantity - 1, subtotal: item.price * (item.quantity - 1) } 
         : item
     ))
   }
@@ -56,13 +60,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   
+  function clearCart() {
+    setCart([])
+  }
 
-  
+  async function payOrder(customer: CustomerData, payment: PaymentData) {
+  try {
+    // Agora passamos os dois objetos separados para o serviço
+    const response = await processCheckout(cart, customer, payment);
 
-  const totalAmount = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+    // Verifique se a estrutura da resposta está correta
+    if (response?.data?.status !== 'PAID') {
+      toast.error('Pagamento recusado. Verifique os dados do cartão.');
+      return;
+    }
+
+    toast.success('Pedido enviado com sucesso!');
+    clearCart();
+
+  } catch (error) {
+    console.error('Erro detalhado no checkout:', error);
+    toast.error('Ocorreu um erro inesperado. Tente novamente mais tarde.');
+  }
+}
+
+  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
  return (
-    <CartContext.Provider value={{ cart, addProduct, totalAmount, removeProduct, deleteProduct }}>
+    <CartContext.Provider value={{ cart, addProduct, subtotal, removeProduct, deleteProduct, payOrder }}>
       {children}
     </CartContext.Provider>
   )

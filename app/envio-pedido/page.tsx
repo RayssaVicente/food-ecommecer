@@ -16,7 +16,6 @@ const masks = {
   cvv: (v: string) => v.replace(/\D/g, '').slice(0, 3),
 }
 
-// --- SCHEMA DE VALIDAÇÃO YUP (Sincronizado com o Prisma) ---
 const checkoutSchema = yup.object().shape({
   fullName: yup.string().required('Nome completo é obrigatório').min(5, 'Digite seu nome completo'),
   email: yup.string().email('E-mail inválido').required('E-mail é obrigatório'),
@@ -25,36 +24,24 @@ const checkoutSchema = yup.object().shape({
   zipCode: yup.string().required('CEP é obrigatório').min(9, 'CEP inválido'),
   street: yup.string().required('Endereço é obrigatório'),
   number: yup.string().required('Nº é obrigatório'),
-  complement: yup.string().nullable(), // Opcional no Prisma (String?)
+  complement: yup.string().nullable(),
   neighborhood: yup.string().required('Bairro é obrigatório'),
   city: yup.string().required('Cidade é obrigatória'),
   state: yup.string().required('Obrigatório').length(2, 'UF deve ter 2 caracteres'),
-  // Campos de cartão (não costumam ir para o banco Customer, mas mantidos para o form)
   cartaoNumero: yup.string().required('Obrigatório').min(19, 'Incompleto'),
   cartaoValidade: yup.string().required('Obrigatório').min(5, 'Inválido'),
   cartaoCVV: yup.string().required('Obrigatório').min(3, 'Inválido'),
 })
 
 export default function CheckoutPage() {
-  const { cart } = useCart()
+  const { cart, payOrder } = useCart()
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [showModal, setShowModal] = useState(false)
   
-  // Estado inicial com as chaves exatas da imagem (fullName, mobile, document, etc)
   const [formData, setFormData] = useState({
-    fullName: '', 
-    email: '', 
-    mobile: '', 
-    document: '', 
-    zipCode: '',
-    street: '', 
-    number: '', 
-    complement: '', 
-    neighborhood: '',
-    city: '', 
-    state: '', 
-    cartaoNumero: '', 
-    cartaoValidade: '', 
-    cartaoCVV: '',
+    fullName: '', email: '', mobile: '', document: '', zipCode: '',
+    street: '', number: '', complement: '', neighborhood: '',
+    city: '', state: '', cartaoNumero: '', cartaoValidade: '', cartaoCVV: '',
   })
 
   const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0)
@@ -63,7 +50,6 @@ export default function CheckoutPage() {
     const { name, value } = e.target
     let maskedValue = value
 
-    // Aplica a máscara baseada no name do input
     if (name === 'document') maskedValue = masks.cpf(value)
     if (name === 'mobile') maskedValue = masks.whatsapp(value)
     if (name === 'zipCode') maskedValue = masks.cep(value)
@@ -80,33 +66,83 @@ export default function CheckoutPage() {
     });
   }
 
-  const handleFinalizarPedido = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      if (cart.length === 0) return alert("Seu carrinho está vazio!")
-      await checkoutSchema.validate(formData, { abortEarly: false })
-      
-      // Aqui os dados já estão com as chaves prontas para o seu model 'Customer'
-      console.log('Dados para o Prisma:', { ...formData, total })
-      alert('Pedido enviado com sucesso!')
-    } catch (err: any) {
+  const handleConfirmOrder = async (e: React.FormEvent) => {
+  e.preventDefault()
+  
+  if (cart.length === 0) return alert("Seu carrinho está vazio!")
+
+  try {
+    // 1. Validação dos campos
+    await checkoutSchema.validate(formData, { abortEarly: false })
+
+    // 2. Mapeamento para o formato que seu backend (CheckoutService) espera
+    const customerData = {
+      fullName: formData.fullName,
+      email: formData.email,
+      mobile: formData.mobile,
+      document: formData.document.replace(/\D/g, ''), // Remove máscara
+      zipCode: formData.zipCode.replace(/\D/g, ''),
+      street: formData.street,
+      number: formData.number,
+      complement: formData.complement || '',
+      neighborhood: formData.neighborhood,
+      city: formData.city,
+      state: formData.state,
+    }
+
+    const paymentData = {
+      creditCardNumber: formData.cartaoNumero.replace(/\s/g, ''),
+      creditCardHolder: formData.fullName,
+      creditCardExpiration: formData.cartaoValidade,
+      creditCardSecurityCode: formData.cartaoCVV,
+    }
+
+    // 3. Chama a função do contexto
+    await payOrder(customerData, paymentData)
+    
+    
+    setShowModal(true)
+
+  } catch (err: any) {
+    if (err.name === 'ValidationError') {
       const validationErrors: Record<string, string> = {}
       err.inner?.forEach((error: any) => {
         validationErrors[error.path] = error.message
       })
       setErrors(validationErrors)
+    } else {
+      alert("Erro ao processar pagamento. Verifique os dados.")
     }
+  }
+}
+
+  const fecharModalERecarregar = () => {
+    setShowModal(false)
+    window.location.href = '/' // Volta para o cardápio e limpa tudo
   }
 
   return (
     <S.CheckoutContainer>
+      {/* MODAL DE RESPOSTA */}
+      {showModal && (
+        <S.ModalOverlay>
+          <S.ModalContent>
+            <div className="icon">✅</div>
+            <h2>Pedido enviado com sucesso!</h2>
+            <p>Obrigado, <strong>{formData.fullName}</strong>!</p>
+            <p>Seu pedido será enviado para: <br/> {formData.street}, {formData.number}</p>
+            <button onClick={fecharModalERecarregar}>OK</button>
+          </S.ModalContent>
+        </S.ModalOverlay>
+      )}
+
       <header>
         <Link href="/" className="back-link">← Voltar para o cardápio</Link>
         <h1>Finalizar Pedido</h1>
       </header>
 
       <div className="content">
-        <S.FormSection onSubmit={handleFinalizarPedido}>
+        <S.FormSection>
           <h2>Suas Informações</h2>
           
           <div className="input-group">
@@ -121,7 +157,7 @@ export default function CheckoutPage() {
             {errors.email && <S.ErrorMessage>{errors.email}</S.ErrorMessage>}
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="row">
             <div className="input-group">
               <label>WhatsApp</label>
               <input type="tel" name="mobile" value={formData.mobile} onChange={handleInputChange} placeholder="(99) 99999-9999" />
@@ -135,7 +171,7 @@ export default function CheckoutPage() {
           </div>
 
           <h2>Endereço de Entrega</h2>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="row">
             <div className="input-group" style={{ flex: 1 }}>
               <label>CEP</label>
               <input type="text" name="zipCode" value={formData.zipCode} onChange={handleInputChange} placeholder="00000-000" />
@@ -148,7 +184,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="row">
             <div className="input-group">
               <label>Número</label>
               <input type="text" name="number" value={formData.number} onChange={handleInputChange} />
@@ -161,7 +197,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="row">
             <div className="input-group" style={{ flex: 2 }}>
               <label>Cidade</label>
               <input type="text" name="city" value={formData.city} onChange={handleInputChange} />
@@ -171,9 +207,9 @@ export default function CheckoutPage() {
               <label>Estado</label>
               <select name="state" value={formData.state} onChange={handleInputChange}>
                 <option value="">UF</option>
+                <option value="PB">PB</option>
                 <option value="SP">SP</option>
                 <option value="RJ">RJ</option>
-                <option value="PB">PB</option>
               </select>
               {errors.state && <S.ErrorMessage>{errors.state}</S.ErrorMessage>}
             </div>
@@ -186,7 +222,7 @@ export default function CheckoutPage() {
             {errors.cartaoNumero && <S.ErrorMessage>{errors.cartaoNumero}</S.ErrorMessage>}
           </div>
 
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div className="row">
             <div className="input-group">
               <label>Validade</label>
               <input type="text" name="cartaoValidade" value={formData.cartaoValidade} onChange={handleInputChange} placeholder="MM/AA" />
@@ -199,11 +235,23 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          <button type="submit" className="submit-btn">Confirmar e Enviar Pedido</button>
+          <button onClick={handleConfirmOrder}>Confirmar e enviar pedido</button>
         </S.FormSection>
 
         <S.SummarySection>
-          {/* ... resumo do carrinho ... */}
+          <h2>Resumo</h2>
+          <div className="items-list">
+            {cart.map(item => (
+              <div key={item.id} className="summary-item">
+                <span>{item.quantity}x {item.name}</span>
+                <strong>R$ {(item.price * item.quantity).toFixed(2)}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="total-container">
+            <span>Total</span>
+            <strong className="total-value">R$ {total.toFixed(2)}</strong>
+          </div>
         </S.SummarySection>
       </div>
     </S.CheckoutContainer>
